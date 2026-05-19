@@ -1,5 +1,5 @@
 import { Header } from "./components/Header";
-import { PvCalculator } from "./components/PvCalculator";
+import { PvCalculator } from "./modules/calculator";
 
 function App() {
   return (

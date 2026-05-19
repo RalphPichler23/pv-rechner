@@ -47,3 +47,62 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+/* ============================================================
+ * Print-Stylesheet (A4) – kompaktes Layout für PDF-Export
+ * ============================================================ */
+@media print {
+  /* A4 Hochformat, schmale Ränder */
+  @page {
+    size: A4;
+    margin: 12mm 12mm 14mm 12mm;
+  }
+
+  html, body {
+    background: white !important;
+    color: #000 !important;
+  }
+
+  /* Header der App im Druck ausblenden (kommt durch Druck-Eigen-Header zurück) */
+  body > #root > div > header {
+    display: none;
+  }
+
+  /* Karten flacher rendern – keine Schatten, dünnere Borders */
+  .shadow-sm, .shadow-xs {
+    box-shadow: none !important;
+  }
+
+  /* Tabelle: Header bei Seitenumbruch wiederholen, keine Zeile zerreißen */
+  table thead {
+    display: table-header-group;
+  }
+  table tr {
+    page-break-inside: avoid;
+  }
+
+  /* Karten und Sektionen kompakter */
+  section {
+    page-break-inside: auto;
+  }
+  .rounded-2xl {
+    border-radius: 8px !important;
+  }
+
+  /* Chart-SVG nicht zu groß */
+  svg {
+    max-height: 220px;
+  }
+
+  /* Tabelle: kleinere Schrift im Druck */
+  table { font-size: 10.5px; }
+  th, td { padding: 4px 6px !important; }
+
+  /* KPI-Karten in eine Reihe quer */
+  .grid {
+    page-break-inside: avoid;
+  }
+
+  /* Footer immer am Ende ohne Umbruch */
+  footer { page-break-inside: avoid; }
+}

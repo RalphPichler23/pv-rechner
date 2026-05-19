@@ -8,16 +8,13 @@ interface Props {
   step?: number;
   min?: number;
   max?: number;
-  /** Anzahl Dezimalstellen für die Anzeige im Feld */
   decimals?: number;
   hint?: string;
 }
 
 /**
  * Numerischer Input mit deutscher Eingabe (Komma erlaubt).
- *
- * Wir halten den Draft nur während des Fokus – dadurch synchronisiert sich
- * der Input automatisch mit `value` von außen, ohne `useEffect`-Sync.
+ * Lokaler Draft während Fokus, sonst synchron mit `value` von außen.
  */
 export function NumberInput({
   label,
@@ -70,10 +67,10 @@ export function NumberInput({
           onKeyDown={(e) => {
             if (e.key === "Enter") (e.target as HTMLInputElement).blur();
           }}
-          className="w-full bg-transparent px-3 py-2.5 text-right text-base font-semibold tabular-nums text-heizma-ink outline-none"
+          className="w-full min-w-0 bg-transparent px-3 py-2.5 text-right text-base font-semibold tabular-nums text-heizma-ink outline-none"
         />
         {unit ? (
-          <span className="flex items-center border-l border-heizma-border bg-heizma-bg px-3 text-sm font-medium text-heizma-muted">
+          <span className="flex items-center whitespace-nowrap border-l border-heizma-border bg-heizma-bg px-2.5 text-xs font-medium text-heizma-muted">
             {unit}
           </span>
         ) : null}

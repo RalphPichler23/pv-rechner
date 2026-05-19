@@ -16,13 +16,28 @@ npm run lint
 ## Was der Rechner kann
 
 - Live-Berechnung über 1–40 Jahre
-- Eingaben: Anlagengröße (kWp), spez. Ertrag, Verbrauch,
-  Eigenverbrauchsquote, Strompreis, Einspeisetarif, Strompreissteigerung,
-  PV-Degradation, Investitionssumme
+- Eingaben: Anlagengröße (kWp), spez. Ertrag, **PV-Investition**, Verbrauch,
+  Eigendeckungsgrad, **Batteriespeicher (kWh + Kosten)**, Strompreis,
+  Einspeisetarif, Strompreissteigerung, PV-Degradation
+- **Auto-Autarkie**: Speichergröße → empfohlene Autarkie (HTW-Berlin-Approximation),
+  manuell überschreibbar
+- **Gesamt-Investition** = PV + Speicher, fließt direkt in Amortisation
 - KPIs: Ersparnis Jahr 1, Kumuliert, Amortisationsjahr, Netto-Gewinn / ROI
 - Cashflow-Chart mit Break-Even-Markierung
-- Detailtabelle Jahr-für-Jahr (Strompreis, PV-Produktion, Netzbezug,
-  Einspeisung, Kosten ohne / mit PV, Ersparnis, Kumuliert, vs. Investition)
+- Detailtabelle Jahr-für-Jahr
+- **PDF-Export** via Druck-Dialog (A4-optimiertes Print-Stylesheet, Heizma-Header
+  und kompakter Parameter-Strip nur im Druck)
+- **Energiemanagement (Optima)** – Toggle, Autarkie-Bonus (PP) und eigene
+  Investition werden zur Gesamt-Investition addiert
+- **Energiegemeinschaft** – Anteile + Tarife + Steigerungen getrennt für
+  Verkauf (Default 8,4 ct/kWh) und Bezug (Default 10,9 ct/kWh); Rest läuft
+  weiterhin regulär über OeMAG/Versorger
+- **Wärmepumpe** – Brennstoff-Preset (Gas/Öl/Pellets/Holz/Kohle/Strom-Direkt)
+  inkl. Wirkungsgrad-Faktor der alten Anlage. Formel:
+  `Stromkosten WP = (Brennstoff × η_alt / SCOP) × Strompreis`. Damit auf den
+  Euro genau zu Heizma's eigener Beispielrechnung "Familie Huber" (855 €/J).
+- **Tabs**: **Nur PV** / **Nur WP** / **WP + PV** – beim Tab-Wechsel werden
+  irrelevante Felder ausgeblendet, Defaults sinnvoll gesetzt.
 
 ## Modell (in `src/lib/pv.ts`)
 
@@ -45,16 +60,51 @@ Jahr 10 kumuliert: 27.816 €).
 
 ```
 src/
-  App.tsx
-  main.tsx
-  index.css                ← Tailwind + Heizma-Tokens (@theme)
-  lib/pv.ts                ← reine Berechnungslogik + Formatter
+  App.tsx                                      ← App-Shell
+  main.tsx                                     ← Entry
+  index.css                                    ← Tailwind v4 + Heizma-Tokens + Print-CSS
+
+  lib/calc/                                    ← Reine Domain-Logik (keine UI)
+    types.ts                                     PvInputs, YearRow, PvResult, TabMode, FuelType
+    defaults.ts                                  DEFAULT_INPUTS + presetForTab()
+    fuels.ts                                     FUEL_PRESETS für Gas/Öl/Pellets/Holz/Kohle/Strom
+    autarchy.ts                                  recommendedAutarchy() (HTW-Berlin-Approx)
+    calculate.ts                                 Hauptberechnung
+    format.ts                                    Intl-Number-Formatter (de-AT)
+    index.ts                                     Re-Exports
+
   components/
-    Header.tsx
-    PvCalculator.tsx       ← Hauptkomponente (Inputs, KPIs, Tabelle)
-    NumberInput.tsx        ← Numerischer Input mit Komma-Support
-    SavingsChart.tsx       ← SVG-Chart kumulierter Cashflow
+    Header.tsx                                   App-Header
+
+  modules/calculator/                          ← UI-Module
+    PvCalculator.tsx                             Orchestrator (~75 Z.)
+    index.ts
+    components/
+      Tabs.tsx                                   Tab-Switch (PV / WP / WP+PV)
+      Toolbar.tsx                                Header + PDF-Export-Button
+      Fieldset.tsx                               Generischer Section-Wrapper
+      NumberInput.tsx                            Numerischer Input mit Komma-Support
+    inputs/
+      InputsPanel.tsx                            Orchestriert die Sections je nach Tab
+      PvInputSection.tsx                         Anlage + Speicher + PV-Investition
+      ConsumptionSection.tsx                     Verbrauch + Auto-Autarkie
+      EmsSection.tsx                             Optima EMS
+      EnergyCommunitySection.tsx                 EG-Verkauf + EG-Bezug (8,4 / 10,9 ct)
+      HeatPumpSection.tsx                        WP + Brennstoff-Preset (Gas/Öl/…)
+      PricingSection.tsx                         Strompreis, Einspeise, Steigerung, Degradation
+      types.ts                                   Setter-Helper
+    results/
+      ResultsPanel.tsx                           Orchestriert die Result-Blocks
+      KpiCards.tsx                               4 KPI-Karten
+      CashflowChart.tsx                          SVG-Cashflow-Chart
+      SummaryStats.tsx                           Energiebilanz
+      ResultTable.tsx                            Jahres-für-Jahr-Tabelle
+    print/
+      PrintHeader.tsx                            Druck-Header (Heizma-Logo, Datum)
+      PrintParameterStrip.tsx                    Parameter-Übersicht für PDF
 ```
+
+**Größen:** kein File über 210 Zeilen, der Hauptkalkulator ist 76 Zeilen.
 
 ## Branding
 
