@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+/* Heizma brand tokens
+ * Primärer Akzent: Heizma-Grün (CTA-Farbe von heizma.at)
+ * dunkles Slate/Navy für Text, weicher Off-White-Hintergrund.
+ */
+@theme {
+  --color-heizma-bg: #F7F7F4;
+  --color-heizma-surface: #FFFFFF;
+  --color-heizma-ink: #0E1116;
+  --color-heizma-ink-soft: #2A2F38;
+  --color-heizma-muted: #6B7280;
+  --color-heizma-border: #E5E7EB;
+
+  /* Heizma-Grün (Hauptmarke) */
+  --color-heizma-green: #22C55E;
+  --color-heizma-green-dark: #16A34A;
+  --color-heizma-green-soft: #DCFCE7;
+  --color-heizma-green-tint: #F0FDF4;
+
+  /* Warnung / negativer Cashflow */
+  --color-heizma-red: #DC2626;
+  --color-heizma-red-soft: #FEE2E2;
+
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-heizma-bg);
+  color: var(--color-heizma-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Number inputs: hide spinner arrows for cleaner UI */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
