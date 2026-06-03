@@ -48,6 +48,19 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+/* Pointer-Cursor auf allen interaktiven Steuerelementen */
+button:not(:disabled),
+select,
+input[type="checkbox"],
+input[type="radio"],
+[role="button"]:not([aria-disabled="true"]),
+label:has(> input[type="checkbox"]) {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+
 /* ============================================================
  * Print-Stylesheet (A4) – kompaktes Layout für PDF-Export
  * ============================================================ */

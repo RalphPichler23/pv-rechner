@@ -24,7 +24,9 @@ export function EmsSection({ input, set }: Props) {
           </div>
           <div className="mt-0.5 text-[11px] text-heizma-muted">
             Steuert Wärmepumpe, Wallbox & Speicher und hebt damit den
-            Eigendeckungsgrad an.
+            Eigendeckungsgrad an. Lohnt sich vor allem mit WP oder Wallbox –
+            bei reiner PV-Anlage kann die EMS-Investition die Amortisation
+            leicht verlängern.
           </div>
         </div>
       </label>

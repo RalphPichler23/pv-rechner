@@ -12,17 +12,35 @@ interface Props {
 
 /** PV-Anlage inkl. Speicher (Komplettpaket). */
 export function PvInputSection({ input, set, totalInvestment }: Props) {
+  const annualProduction = input.kwp * input.yieldPerKwp;
+
+  // Jahresertrag direkt eingeben → spez. Ertrag wird daraus abgeleitet.
+  const onAnnualProductionChange = (kwhPerYear: number) => {
+    if (input.kwp <= 0) return;
+    set("yieldPerKwp", kwhPerYear / input.kwp);
+  };
+
   return (
     <Fieldset legend="PV-Anlage & Speicher">
-      <div className="grid grid-cols-2 gap-3">
+      <NumberInput
+        label="Anlagengröße"
+        unit="kWp"
+        value={input.kwp}
+        onChange={(v) => set("kwp", v)}
+        min={0}
+        step={0.5}
+        decimals={1}
+      />
+      <div className="mt-3 grid grid-cols-2 gap-3">
         <NumberInput
-          label="Anlagengröße"
-          unit="kWp"
-          value={input.kwp}
-          onChange={(v) => set("kwp", v)}
+          label="Erwarteter Jahresertrag"
+          unit="kWh/J"
+          value={annualProduction}
+          onChange={onAnnualProductionChange}
           min={0}
-          step={0.5}
-          decimals={1}
+          step={100}
+          decimals={0}
+          hint="Wert aus PV-Angebot / Monitoring"
         />
         <NumberInput
           label="Spez. Ertrag"
@@ -31,6 +49,7 @@ export function PvInputSection({ input, set, totalInvestment }: Props) {
           onChange={(v) => set("yieldPerKwp", v)}
           min={0}
           step={25}
+          decimals={0}
           hint="AT typisch 950 – 1.150"
         />
       </div>

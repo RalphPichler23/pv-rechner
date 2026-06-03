@@ -82,6 +82,28 @@ export interface PvInputs {
   oldFuelPriceIncrease: number;
   /** Wartungskosten alte Heizung €/Jahr */
   oldMaintenanceCost: number;
+
+  // ---- Zusatzverbraucher (bestehende Geräte, kein Heizungstausch!) ----
+  /** Wärmepumpe ist bereits vorhanden (zählt nur als Verbraucher) */
+  existingWpEnabled: boolean;
+  /** Jahresstrombedarf der bestehenden WP in kWh */
+  existingWpKwhPerYear: number;
+  /** Elektroauto vorhanden */
+  evEnabled: boolean;
+  /** Jahresstrombedarf E-Auto in kWh (12.000 km × 18 kWh/100km ≈ 2.500 kWh inkl. Ladeverluste) */
+  evKwhPerYear: number;
+  /** Pool (Filterpumpe + ggf. Heizung) */
+  poolEnabled: boolean;
+  poolKwhPerYear: number;
+  /** Sauna */
+  saunaEnabled: boolean;
+  saunaKwhPerYear: number;
+  /** Whirlpool / Outdoor-Hottub */
+  whirlpoolEnabled: boolean;
+  whirlpoolKwhPerYear: number;
+  /** Klimaanlage */
+  acEnabled: boolean;
+  acKwhPerYear: number;
 }
 
 export interface YearRow {

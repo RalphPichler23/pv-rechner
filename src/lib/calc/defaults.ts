@@ -6,29 +6,30 @@ import type { PvInputs, TabMode } from "./types";
  * Reproduziert die Heizma-Vorlage (mit wpEnabled = false): 2.373 € J1, 27.816 € kumuliert J10.
  */
 export const DEFAULT_INPUTS: PvInputs = {
-  // PV-Anlage (Heizma "Komplettpaket": ~24 k€ für 14 kWp inkl. Speicher)
-  kwp: 14,
+  // PV-Anlage (Heizma "Komplettpaket": ~18 k€ für 10 kWp inkl. Speicher)
+  kwp: 10,
   yieldPerKwp: 1075,
-  investment: 24000,
+  investment: 18000,
 
   // Speicher als Parameter (Heizma-Komplettpaket: ~10 kWh)
   storageKwh: 10,
 
-  // Verbrauch
-  consumption: 11000,
-  autarchyRate: 0.8,
+  // Verbrauch (typischer EFH mit WP-Vorbereitung)
+  consumption: 4500,
+  autarchyRate: 0.7,
 
   // Preise
   electricityPrice: 0.21,
-  feedInTariff: 0.084,
+  feedInTariff: 0.06,
   priceIncrease: 0.05,
   degradation: 0.005,
-  years: 20,
+  years: 25,
 
-  // EMS (Optima)
+  // EMS (Optima) – Heizma wirbt mit "bis zu 30 % mehr Effizienz"
+  // Realistisch: +10–15 PP Autarkie bei aktivem WP/Wallbox-Verbund
   emsEnabled: false,
-  emsAutarchyBonus: 0.1,
-  emsCost: 2500,
+  emsAutarchyBonus: 0.15,
+  emsCost: 1500,
 
   // Energiegemeinschaft (Defaults laut User: 8,4 ct Verkauf, 10,9 ct Bezug)
   egSellShare: 0,
@@ -51,6 +52,20 @@ export const DEFAULT_INPUTS: PvInputs = {
   oldFuelPricePerKwh: FUEL_PRESETS.gas.price,
   oldFuelPriceIncrease: FUEL_PRESETS.gas.increase,
   oldMaintenanceCost: 200,
+
+  // Zusatzverbraucher (bestehende Geräte)
+  existingWpEnabled: false,
+  existingWpKwhPerYear: 4000, // typ. 16.000 kWh Wärme / JAZ 4
+  evEnabled: false,
+  evKwhPerYear: 3000,         // 12.000 km × 18 kWh/100km × 1,1 Ladeverlust
+  poolEnabled: false,
+  poolKwhPerYear: 2500,       // Filterpumpe Saison + leichte Heizung
+  saunaEnabled: false,
+  saunaKwhPerYear: 1500,      // 6-8 kW Ofen, 1-3× Woche × 2-3 h
+  whirlpoolEnabled: false,
+  whirlpoolKwhPerYear: 3000,  // ganzjährig auf ~37 °C beheizt
+  acEnabled: false,
+  acKwhPerYear: 500,          // Split-Gerät EFH 500 h/J Betrieb (klimavergleich.at)
 };
 
 /**
@@ -63,6 +78,6 @@ export function presetForTab(prev: PvInputs, mode: TabMode): PvInputs {
     case "wp":
       return { ...prev, kwp: 0, investment: 0, wpEnabled: true };
     case "combined":
-      return { ...prev, wpEnabled: true, kwp: prev.kwp || 14, investment: prev.investment || 24000 };
+      return { ...prev, wpEnabled: true, kwp: prev.kwp || 10, investment: prev.investment || 18000 };
   }
 }

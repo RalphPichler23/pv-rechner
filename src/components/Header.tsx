@@ -35,10 +35,10 @@ export function Header() {
           </div>
           <div>
             <div className="text-lg font-extrabold tracking-tight text-heizma-ink">
-              Heizma <span className="text-heizma-green">·</span> PV-Rechner
+              Heizma <span className="text-heizma-green">·</span> Ersparnisrechner
             </div>
             <div className="text-xs text-heizma-muted">
-              Amortisation & Ersparnis für Photovoltaik-Anlagen
+              Amortisation für PV, Wärmepumpe & Komplettpaket
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@ import type { PvInputs, PvResult, TabMode } from "../../../lib/calc";
 import { ConsumptionSection } from "./ConsumptionSection";
 import { EmsSection } from "./EmsSection";
 import { EnergyCommunitySection } from "./EnergyCommunitySection";
+import { ExtraConsumersSection } from "./ExtraConsumersSection";
 import { HeatPumpSection } from "./HeatPumpSection";
 import { PricingSection } from "./PricingSection";
 import { PvInputSection } from "./PvInputSection";
@@ -40,6 +41,14 @@ export function InputsPanel({ tab, input, result, set, setMany, onReset }: Props
         set={set}
         wpElectricity={result.wpElectricity}
       />
+
+      {showPv ? (
+        <ExtraConsumersSection
+          input={input}
+          set={set}
+          showExistingWp={tab === "pv"}
+        />
+      ) : null}
 
       {showPv ? <EmsSection input={input} set={set} /> : null}
       {showPv ? <EnergyCommunitySection input={input} set={set} /> : null}

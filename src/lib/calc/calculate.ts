@@ -35,7 +35,19 @@ export function calculate(input: PvInputs): PvResult {
   const wpElectricity =
     input.wpEnabled && input.wpScop > 0 ? wpHeatDemand / input.wpScop : 0;
   const wpInvestment = input.wpEnabled ? input.wpInvestment : 0;
-  const effectiveConsumption = input.consumption + wpElectricity;
+
+  // Zusatzverbraucher (bestehende Geräte) – NICHT doppelt zählen wenn
+  // der Heizungstausch (wpEnabled) bereits aktiv ist.
+  const existingWp =
+    input.existingWpEnabled && !input.wpEnabled ? input.existingWpKwhPerYear : 0;
+  const ev = input.evEnabled ? input.evKwhPerYear : 0;
+  const pool = input.poolEnabled ? input.poolKwhPerYear : 0;
+  const sauna = input.saunaEnabled ? input.saunaKwhPerYear : 0;
+  const whirlpool = input.whirlpoolEnabled ? input.whirlpoolKwhPerYear : 0;
+  const ac = input.acEnabled ? input.acKwhPerYear : 0;
+
+  const effectiveConsumption =
+    input.consumption + wpElectricity + existingWp + ev + pool + sauna + whirlpool + ac;
 
   // Gesamt-Investition
   const totalInvestment = input.investment + emsCost + wpInvestment;

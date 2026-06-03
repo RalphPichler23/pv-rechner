@@ -1,6 +1,7 @@
-# Heizma · PV-Rechner
+# Heizma · Ersparnisrechner
 
-Interner PV-Amortisationsrechner für Beratungsgespräche.
+Interner Amortisationsrechner für PV-Anlagen, Wärmepumpen und Komplettpakete
+(WP + PV + Speicher + EMS + Energiegemeinschaft) für Beratungsgespräche.
 React + TypeScript + Vite + Tailwind CSS v4.
 
 ## Loslegen
