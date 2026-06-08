@@ -62,8 +62,13 @@ export interface PvInputs {
   egSellPriceIncrease: number;
   /** Anteil des Netzbezugs, der aus der EG gekauft wird (0..1) */
   egBuyShare: number;
-  /** EG-Kaufpreis Jahr 1 in €/kWh */
+  /** EG-Kaufpreis Jahr 1 in €/kWh (reine Energie-Komponente) */
   egBuyPrice: number;
+  /**
+   * Netzentgelte, Elektrizitätsabgabe, Ökostrompauschale und USt — werden
+   * beim EG-Bezug zusätzlich zum Energiepreis fällig (AT 2026 typisch ~7 ct/kWh).
+   */
+  egBuyExtraCharges: number;
   /** jährliche Steigerung des EG-Kaufpreises (0..1) */
   egBuyPriceIncrease: number;
 

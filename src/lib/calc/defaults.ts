@@ -46,6 +46,9 @@ export const DEFAULT_INPUTS: PvInputs = {
   egSellPriceIncrease: 0,
   egBuyShare: 0,
   egBuyPrice: 0.109,
+  // AT 2026: Netzentgelte ~3-5 ct (reduziert für lokale EG) + E-Abgabe 1,5 ct
+  // + Ökostrompauschale + 20% USt = ~7 ct/kWh Aufschlag (e-control)
+  egBuyExtraCharges: 0.07,
   egBuyPriceIncrease: 0.05,
 
   // Wärmepumpe (Heizma Beispiel "Familie Huber")

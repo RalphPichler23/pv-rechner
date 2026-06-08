@@ -72,7 +72,9 @@ export function calculate(input: PvInputs): PvResult {
 
     const price = input.electricityPrice * priceFactor;
     const oldFuelPrice = input.oldFuelPricePerKwh * fuelFactor;
-    const egBuy = input.egBuyPrice * egBuyFactor;
+    // EG-Bezug: Energiepreis + fixe Netz-/Steuer-Aufschläge (skalieren ggf. nicht)
+    const egBuy =
+      input.egBuyPrice * egBuyFactor + (input.egBuyExtraCharges || 0);
     const egSell = input.egSellPrice * egSellFactor;
 
     const pvProduction = annualProductionY1 * degradationFactor;

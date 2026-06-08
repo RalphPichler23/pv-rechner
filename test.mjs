@@ -35,6 +35,8 @@ const base = {
   // Vorlage-Tests rechnen mit statischem Strompreis – dyn. Tarif aus
   dynamicTariffEnabled: false,
   wpEmsIntegrated: false,
+  // EG-Aufschläge in Vorlage-Tests deaktiviert
+  egBuyExtraCharges: 0,
 };
 
 // ============================================================
@@ -405,6 +407,17 @@ exact("M2: Vorlage J10 weiter exakt (dyn aus)",
 exact("M3: Status quo identisch ohne/mit dyn",
   Math.round(mOhne.rows[0].costWithoutPv), Math.round(mMit.rows[0].costWithoutPv));
 
+// M4: EG-Bezug-Aufschlag (Netzentgelte + Steuern) wirkt sich aus
+const m4Input = { ...base, kwp: 14, yieldPerKwp: 1075, consumption: 11000,
+  autarchyRate: 0.8, electricityPrice: 0.30, feedInTariff: 0.06,
+  priceIncrease: 0, degradation: 0, years: 1,
+  egBuyShare: 1.0, egBuyPrice: 0.10, egBuyExtraCharges: 0 };
+const m4Ohne = calculate(m4Input);
+const m4Mit  = calculate({ ...m4Input, egBuyExtraCharges: 0.07 });
+const m4Expected = 2200 * 0.07; // 2200 kWh Netzbezug × 7 ct Aufschlag
+eq("M4: EG-Aufschlag 7 ct senkt Ersparnis", m4Ohne.rows[0].savings - m4Mit.rows[0].savings, m4Expected, 0.5);
+console.log(`     ohne Aufschlag: ${Math.round(m4Ohne.rows[0].savings)} €  ·  mit 7 ct: ${Math.round(m4Mit.rows[0].savings)} €  ·  Δ ${Math.round(m4Ohne.rows[0].savings - m4Mit.rows[0].savings)} €`);
+
 // ============================================================
 console.log("\n[N] WP-EMS-Integration (Lastverschiebung)");
 // ============================================================
@@ -423,6 +436,42 @@ exact("N2: Ohne WP keine Wirkung", Math.abs(nKeine - nKeineOhne) < 0.001, true);
 // N3: Combined-Tab setzt wpEmsIntegrated = true automatisch
 const nCombined = presetForTab(DEFAULT_INPUTS, "combined");
 exact("N3: Combined-Tab → wpEmsIntegrated = true", nCombined.wpEmsIntegrated, true);
+
+// N5: Combined-Modus Plausibilität (WP+PV+Speicher+EMS)
+// Heizma Marketing: "Bis zu 80% Energiekosten sparen mit WP+PV+Speicher"
+// HTW Berlin Sektorkopplung: 65-75% Gesamtautarkie
+// Vattenfall: Amortisation Komplettpaket 10-15 J typisch in AT
+const nComboInput = { ...base,
+  kwp: 10, yieldPerKwp: 1075, consumption: 4500,
+  autarchyRate: 0.65, storageKwh: 10,
+  investment: 18000,
+  emsEnabled: true, emsAutarchyBonus: 0.10, emsCost: 866,
+  electricityPrice: 0.21, feedInTariff: 0.06,
+  priceIncrease: 0, degradation: 0,
+  wpEnabled: true, wpEmsIntegrated: true,
+  oldFuelDemand: 15000, oldHeatingEfficiency: 0.9, wpScop: 4,
+  wpInvestment: 12500, wpMaintenanceCost: 200,
+  oldFuelType: "gas", oldFuelPricePerKwh: 0.10, oldMaintenanceCost: 200,
+  years: 1,
+};
+const nCombo = calculate(nComboInput);
+// Status quo = 4500 × 0.21 + 15000 × 0.10 + 200 = 945 + 1500 + 200 = 2645 €
+exact("N5a: Combined Status quo (Strom + Gas + Wartung)",
+  Math.round(nCombo.rows[0].costWithoutPv), 2645);
+// Reduktion sollte > 50% sein (HTW Sektorkopplung)
+const reduction = 1 - nCombo.rows[0].costWithPv / nCombo.rows[0].costWithoutPv;
+exact("N5b: Energiekosten-Reduktion > 60 % (HTW)", reduction > 0.6, true);
+console.log(`     Status quo: 2.645 €  ·  mit Komplettpaket: ${Math.round(nCombo.rows[0].costWithPv)} €  ·  Reduktion: ${(reduction*100).toFixed(0)} %`);
+// Gesamt-Investition addiert korrekt
+exact("N5c: Gesamt-Investition PV+EMS+WP",
+  nCombo.totalInvestment, 18000 + 866 + 12500);
+
+// N6: Heizma "bis 80%" Marketing — bei sehr großer Anlage erreichbar
+const nMaxInput = { ...nComboInput, kwp: 14, yieldPerKwp: 1100, storageKwh: 15 };
+const nMax = calculate(nMaxInput);
+const reductionMax = 1 - nMax.rows[0].costWithPv / nMax.rows[0].costWithoutPv;
+exact("N6: Top-Setup erreicht > 80% Reduktion", reductionMax > 0.8, true);
+console.log(`     14 kWp + 15 kWh Speicher: ${(reductionMax*100).toFixed(0)} % Reduktion`);
 
 // N4: Vorlage Heizma weiter exakt (wpEmsIntegrated aus)
 const nVorlage = calculate({ ...base, kwp: 14, yieldPerKwp: 1075,

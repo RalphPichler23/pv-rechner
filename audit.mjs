@@ -135,6 +135,7 @@ const examples = [
       egSellPrice: 0.084, egBuyPrice: 0.109, egSellPriceIncrease: 0, egBuyPriceIncrease: 0,
       existingWpKwhPerYear: 0, evKwhPerYear: 0, poolKwhPerYear: 0,
       saunaKwhPerYear: 0, whirlpoolKwhPerYear: 0, acKwhPerYear: 0,
+      egBuyExtraCharges: 0,
     },
     checks: [
       ["J1 Ersparnis",     (r) => Math.round(r.rows[0].savings), 2373, "Heizma Screenshot"],
@@ -160,6 +161,7 @@ const examples = [
       egSellPrice: 0.084, egBuyPrice: 0.109, egSellPriceIncrease: 0, egBuyPriceIncrease: 0,
       existingWpKwhPerYear: 0, evKwhPerYear: 0, poolKwhPerYear: 0,
       saunaKwhPerYear: 0, whirlpoolKwhPerYear: 0, acKwhPerYear: 0,
+      egBuyExtraCharges: 0,
     },
     checks: [
       ["Wärmebedarf (15.000 × 0,9)",  (r) => Math.round(r.wpHeatDemand), 13500, "Heizma-Artikel"],
