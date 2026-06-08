@@ -16,7 +16,11 @@ interface Props {
  * Kosten unterschreiten ⇒ Amortisation.
  */
 export function CostComparisonChart({ rows, investment }: Props) {
-  // Kumulative Werte berechnen
+  // Kumulative Werte berechnen.
+  // Einspeise-Erlöse können sich real ansammeln (Geld aufs Konto), daher
+  // dürfen die jährlichen Netto-Stromkosten negativ sein und kumulieren.
+  // Mit der Strompreis-Steigerung kippt das pro Jahr nach ~15-20 J ins
+  // Positive und die Linie beginnt zu steigen.
   const points = rows.map((r, i, arr) => {
     const sumWithout = arr.slice(0, i + 1).reduce((s, x) => s + x.costWithoutPv, 0);
     const sumWith = arr.slice(0, i + 1).reduce((s, x) => s + x.costWithPv, 0);

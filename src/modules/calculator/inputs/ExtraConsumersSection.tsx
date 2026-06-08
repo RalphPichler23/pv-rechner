@@ -113,6 +113,27 @@ export function ExtraConsumersSection({ input, set, showExistingWp }: Props) {
         ))}
       </div>
 
+      {/* Sub-Option für bestehende WP: ins EMS einbinden? */}
+      {showExistingWp && input.existingWpEnabled && input.emsEnabled ? (
+        <label className="mt-3 flex items-start gap-3 rounded-xl border border-heizma-border bg-heizma-bg/60 p-3">
+          <input
+            type="checkbox"
+            checked={input.wpEmsIntegrated}
+            onChange={(e) => set("wpEmsIntegrated", e.target.checked)}
+            className="mt-0.5 h-4 w-4 cursor-pointer accent-heizma-green"
+          />
+          <div className="flex-1">
+            <div className="text-[13px] font-medium text-heizma-ink-soft">
+              🔗 Bestehende WP ins EMS einbindbar
+            </div>
+            <div className="mt-0.5 text-[11px] text-heizma-muted">
+              EMS kann die WP tagsüber laufen lassen (PV-Überschuss) und Puffer-
+              speicher gezielt laden. Hebt den WP-Synergie-Faktor 60 % → 80 %.
+            </div>
+          </div>
+        </label>
+      ) : null}
+
       {totalExtra > 0 ? (
         <div className="mt-3 rounded-lg bg-heizma-green-soft/60 px-3 py-2 text-[12px] text-heizma-ink-soft">
           <div className="flex items-baseline justify-between gap-2">

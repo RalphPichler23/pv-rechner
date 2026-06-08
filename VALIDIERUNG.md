@@ -229,7 +229,7 @@ Die Faktoren sind durch saisonale Last-Profile in Studien belegt:
 | E-Auto 🚗 | **0,8** | Ganzjährig + Überschussladen: Fraunhofer ISE misst +25–35 PP EV-Steigerung | [Fraunhofer ISE Wallbox-Überschussladen](https://www.enbw.com/blog/elektromobilitaet/laden/pv-ueberschussladen-so-nutzen-sie-solarstrom-optimal-fuers-e-auto/) · [Wallbox-Inspektion 2025 HTW/Fraunhofer/ADAC](https://www.energie-experten.org/news/wallboxen-test-2025-die-besten-ladestationen-fuer-pv-strom-ueberschuesse) |
 | Sauna 🧖 | **0,6** | Häufig abends/Wochenende → nur teilweise PV-Direktverbrauch | [WEB.DE Sauna Verbrauch](https://www.energie.web.de/ratgeber/verbrauch/stromverbrauch-sauna/) |
 | Whirlpool ♨️ | **0,6** | Ganzjährig beheizt (auch nachts) – Speicher hilft, Sonne nicht ganzjährig | [EcoFlow Whirlpool Stromverbrauch](https://blog.ecoflow.com/de/whirlpool-stromverbrauch-am-tag/) |
-| Wärmepumpe 🔥 | **0,4** | Winter-Last, PV im Winter nur 5–15 % der Jahresproduktion | [HTW Berlin PV+WP+Speicher](https://solar.htw-berlin.de/publikationen/waermepumpen-und-pv-batteriespeicher/) · [42watt PV+WP](https://www.42watt.de/magazin/waermepumpe-mit-photovoltaik) |
+| Wärmepumpe 🔥 | **0,6** | Heizperiode = **42 % der PV-Jahresproduktion** (PVGIS-Monatswerte Wien: Okt 7 %, Nov 4 %, Dez 3 %, Jan 3 %, Feb 5 %, Mär 9 %, Apr 11 % = 42 %). Mit thermischem Pufferspeicher + EMS lassen sich Übergangsmonate (Okt/Mär/Apr) gut decken. HTW Berlin: PV+WP+Speicher = 65–75 % Gesamtautarkie. | [HTW Berlin PV+WP+Speicher](https://solar.htw-berlin.de/publikationen/waermepumpen-und-pv-batteriespeicher/) · [42watt PV+WP](https://www.42watt.de/magazin/waermepumpe-mit-photovoltaik) · PVGIS |
 
 **Test J.1–J.5** prüft, dass diese Faktoren in der Logik korrekt verankert sind.
 
@@ -241,7 +241,7 @@ Die Faktoren sind durch saisonale Last-Profile in Studien belegt:
 | + 3.000 kWh Pool | 62,6 % |
 | + 3.000 kWh E-Auto | 56,2 % |
 | + 3.000 kWh Sauna | 53,6 % |
-| + 3.000 kWh Wärmepumpe | 46,4 % |
+| + 3.000 kWh Wärmepumpe | 52,7 % |
 
 → Geräte mit Sommer-Last (Pool, Klima) drücken die Autarkie kaum, Winter-Geräte (WP) deutlich.
 

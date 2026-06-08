@@ -61,13 +61,13 @@ export function KpiCards({ result, years }: Props) {
       <KpiCard
         label="Amortisation"
         value={
-          result.amortizationYear !== null
-            ? `Jahr ${result.amortizationYear}`
+          result.amortizationFraction !== null
+            ? fmt.years(result.amortizationFraction)
             : "—"
         }
         hint={
-          result.amortizationFraction !== null
-            ? `nach ${result.amortizationFraction.toFixed(1)} Jahren`
+          result.amortizationYear !== null
+            ? `Break-Even im Jahr ${result.amortizationYear}`
             : "im Zeitraum nicht erreicht"
         }
         tone={result.amortizationYear !== null ? "green" : "muted"}

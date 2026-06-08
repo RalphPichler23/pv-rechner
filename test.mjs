@@ -8,6 +8,7 @@ import {
   calculate,
   DEFAULT_INPUTS,
   FUEL_PRESETS,
+  presetForTab,
   recommendedAutarchy,
 } from "./src/lib/calc/index.ts";
 
@@ -27,9 +28,13 @@ const base = {
   ...DEFAULT_INPUTS,
   investment: 0, storageKwh: 0, emsEnabled: false,
   egSellShare: 0, egBuyShare: 0, wpEnabled: false,
+  existingPvEnabled: false,
   existingWpEnabled: false, evEnabled: false,
   poolEnabled: false, saunaEnabled: false,
   whirlpoolEnabled: false, acEnabled: false,
+  // Vorlage-Tests rechnen mit statischem Strompreis – dyn. Tarif aus
+  dynamicTariffEnabled: false,
+  wpEmsIntegrated: false,
 };
 
 // ============================================================
@@ -270,12 +275,13 @@ console.log("\n[J] Synergie-Faktoren: Plausibilität gegen Studien");
 // ============================================================
 // Belege:
 //   - Fraunhofer ISE: EV-Überschussladen steigert EV 30% → 55-65% (+ 25-35 PP)
-//   - HTW Berlin Sektorkopplung: WP-Strom v.a. Winter, PV liefert 5-15% in Winter
+//   - HTW Berlin Sektorkopplung: PV+WP+Speicher = 65-75% Gesamtautarkie
+//   - PVGIS Monatswerte: 42% der PV-Jahresproduktion in Heizperiode Okt-Apr
 //   - Wallbox-Inspektion 2025 (HTW/Fraunhofer/ADAC): Solar-Anteil 50-90% beim EV-Laden
 // Daraus die Synergie-Faktoren (Anteil relativ zum Haushaltsstrom-Faktor 1.0):
 const syn = {
   household: 1.0,
-  heatPump: 0.4,
+  heatPump: 0.6,
   ev: 0.8,
   pool: 1.0,
   ac: 1.0,
@@ -286,12 +292,144 @@ const syn = {
 // J1: Pool und Klima haben Sommer-Last → Faktor wie Haushalt (1.0)
 exact("J1: Pool-Faktor = 1.0 (Sommer-Last)",        syn.pool, 1.0);
 exact("J2: Klima-Faktor = 1.0 (Sommer-Mittag)",     syn.ac, 1.0);
-// J3: WP-Faktor 0.4 — entspricht HTW-Daten (Winter-PV 5-15%, Sommer-EV ~80%)
-exact("J3: WP-Faktor = 0.4 (Winter-Last)",          syn.heatPump, 0.4);
+// J3: WP-Faktor 0.6 — Heizperiode 42% PV-Jahresertrag + thermischer Puffer
+exact("J3: WP-Faktor = 0.6 (Sektorkopplung)",       syn.heatPump, 0.6);
 // J4: EV-Faktor 0.8 — Fraunhofer ISE: +25-35 PP, also Faktor 0.7-1.0; 0.8 mittig
 exact("J4: EV-Faktor = 0.8 (Fraunhofer 25-35 PP)",  syn.ev, 0.8);
 // J5: Whirlpool/Sauna 0.6 — gemischt (ganzjährig bzw. abends)
 exact("J5: Sauna+Whirlpool = 0.6 (gemischt)",       syn.sauna === 0.6 && syn.whirlpool === 0.6, true);
+
+// ============================================================
+console.log("\n[K] Bestehende PV im WP-Tab");
+// ============================================================
+
+// K1: WP ohne bestehende PV — voller Strompreis
+const k1Input = { ...base,
+  consumption: 0, autarchyRate: 0, kwp: 0, yieldPerKwp: 0,
+  electricityPrice: 0.28, priceIncrease: 0, degradation: 0,
+  wpEnabled: true,
+  oldFuelDemand: 15000, oldHeatingEfficiency: 0.9, wpScop: 4,
+  oldFuelType: "gas", oldFuelPricePerKwh: 0.12, oldFuelPriceIncrease: 0,
+  oldMaintenanceCost: 200, wpMaintenanceCost: 200, wpInvestment: 0,
+  years: 1,
+};
+const k1 = calculate(k1Input);
+// Ersparnis Heizma Huber = 855 € (bekannt aus B3)
+eq("K1: WP ohne bestehende PV (Familie Huber)", k1.rows[0].savings, 855, 0.5);
+
+// K2: WP MIT bestehender PV — WP-Strom wird durch PV gedeckt
+const k2 = calculate({ ...k1Input,
+  existingPvEnabled: true,
+  kwp: 10, yieldPerKwp: 1075,
+  storageKwh: 10, autarchyRate: 0.7, feedInTariff: 0.06,
+});
+// WP-Strom = 13.500/4 = 3.375 kWh, gedeckt durch PV via 70% Autarkie
+// Plus: PV produziert 10.750 kWh - 3.375 EV = 7.375 kWh Einspeisung × 6 ct = 442,50 € Erlös
+exact("K2: Investition bleibt 0 (PV bestehend)", k2.totalInvestment, 0);
+exact("K2: WP-Ersparnis MIT PV > OHNE PV",
+  Math.round(k2.rows[0].savings) > Math.round(k1.rows[0].savings), true);
+console.log(`     ohne PV: ${Math.round(k1.rows[0].savings)} €  ·  mit bestehender PV: ${Math.round(k2.rows[0].savings)} €  ·  Differenz: +${Math.round(k2.rows[0].savings - k1.rows[0].savings)} €/J`);
+
+// K3: presetForTab.wp setzt existingPvEnabled je nach Zustand
+const k3PvTab = presetForTab(DEFAULT_INPUTS, "pv");
+const k3WpTab = presetForTab(k3PvTab, "wp");
+exact("K3: Wechsel PV→WP setzt existingPvEnabled=false", k3WpTab.existingPvEnabled, false);
+exact("K3: Wechsel PV→WP setzt kwp=0 wenn kein existingPv", k3WpTab.kwp, 0);
+
+// K4: Combined-Tab schaltet existingPvEnabled aus (eigene Investition)
+const k4 = presetForTab({ ...DEFAULT_INPUTS, existingPvEnabled: true, kwp: 5 }, "combined");
+exact("K4: Combined-Tab setzt existingPvEnabled=false", k4.existingPvEnabled, false);
+
+// ============================================================
+console.log("\n[L] Status-quo inkludiert Zusatzverbraucher (Regression)");
+// ============================================================
+// Bug-Regression: Wenn der Kunde bestehende WP/EV/Pool hat, zahlt er im
+// Status quo auch dafür. Vorher: nur Haushaltsstrom → Ersparnis zu niedrig.
+
+const lInput = { ...base,
+  kwp: 10, yieldPerKwp: 1075, consumption: 4500,
+  storageKwh: 15, autarchyRate: 0.65,
+  electricityPrice: 0.21, feedInTariff: 0.06,
+  priceIncrease: 0, degradation: 0,
+  existingWpEnabled: true, existingWpKwhPerYear: 4000,
+  years: 1,
+};
+const l = calculate(lInput);
+// Status quo = (4500 + 4000) × 0.21 = 1.785 €
+exact("L1: Status quo Strom inkl. bestehender WP", Math.round(l.rows[0].costWithoutPv), 1785);
+// Ersparnis muss > 1.000 €/J sein (war vorher fälschlicherweise ~611)
+exact("L2: Ersparnis > 1.000 €/J (Bug-Fix)",
+  Math.round(l.rows[0].savings) > 1000, true);
+console.log(`     Status quo: ${Math.round(l.rows[0].costWithoutPv)} € · mit PV: ${Math.round(l.rows[0].costWithPv)} € · Ersparnis: ${Math.round(l.rows[0].savings)} €/J`);
+
+// L3: Ohne Zusatzverbraucher bleibt costWithoutPv = consumption × price
+const lNoExtra = calculate({ ...lInput, existingWpEnabled: false });
+exact("L3: Ohne Zusatzverbraucher unverändert",
+  Math.round(lNoExtra.rows[0].costWithoutPv), Math.round(4500 * 0.21));
+
+// L4: Vorlage Heizma bleibt exakt
+const lVorlage = calculate({ ...base, kwp: 14, yieldPerKwp: 1075,
+  consumption: 11000, autarchyRate: 0.8, electricityPrice: 0.21,
+  feedInTariff: 0.084, priceIncrease: 0.05, degradation: 0.005, years: 10 });
+exact("L4: Vorlage J10 kumuliert weiterhin 27.816 €",
+  Math.round(lVorlage.rows[9].cumulativeSavings), 27816);
+
+// ============================================================
+console.log("\n[M] Dynamische Stromtarife");
+// ============================================================
+// aWattar / Tibber: Verbrauch in günstige Stunden verschieben.
+// Rabatt wirkt NUR auf "Mit PV"-Seite (Netzbezug nach EMS-Optimierung).
+// Status quo bleibt voller Preis (ohne EMS keine intelligente Steuerung).
+
+const mInput = { ...base, kwp: 10, yieldPerKwp: 1075, consumption: 11000,
+  autarchyRate: 0.8, electricityPrice: 0.21, feedInTariff: 0.06,
+  priceIncrease: 0, degradation: 0, years: 1 };
+const mOhne = calculate(mInput);
+const mMit = calculate({ ...mInput, dynamicTariffEnabled: true, dynamicTariffDiscount: 0.10 });
+
+// Differenz = regBoughtKwh × 10 % × strompreis = gridConsumption × 0.021
+const regBought = mOhne.rows[0].gridConsumption;
+const expected = regBought * 0.021;
+const actual = mMit.rows[0].savings - mOhne.rows[0].savings;
+eq("M1: Dyn. Tarif 10 % wirkt nur auf Netzbezug", actual, expected, 0.5);
+console.log(`     Mehr-Ersparnis: +${Math.round(actual)} €/J  (für ${Math.round(regBought)} kWh Netzbezug × 2,1 ct Rabatt)`);
+
+// M2: Vorlage bleibt exakt wenn dyn. Tarif AUS
+const mVorlage = calculate({ ...base, kwp: 14, yieldPerKwp: 1075,
+  consumption: 11000, autarchyRate: 0.8, electricityPrice: 0.21,
+  feedInTariff: 0.084, priceIncrease: 0.05, degradation: 0.005, years: 10 });
+exact("M2: Vorlage J10 weiter exakt (dyn aus)",
+  Math.round(mVorlage.rows[9].cumulativeSavings), 27816);
+
+// M3: Status quo Kosten unverändert (Rabatt wirkt nicht auf Status quo)
+exact("M3: Status quo identisch ohne/mit dyn",
+  Math.round(mOhne.rows[0].costWithoutPv), Math.round(mMit.rows[0].costWithoutPv));
+
+// ============================================================
+console.log("\n[N] WP-EMS-Integration (Lastverschiebung)");
+// ============================================================
+
+// N1: WP-EMS-Integration hebt Autarkie-Empfehlung von 0,6 auf 0,8 Faktor
+const nOhne = recommendedAutarchy(4500, 15, 0, 10750, 0, 4000, 0, 0, 0, 0, false);
+const nMit  = recommendedAutarchy(4500, 15, 0, 10750, 0, 4000, 0, 0, 0, 0, true);
+exact("N1: WP-EMS-Integration erhöht Autarkie", nMit > nOhne, true);
+console.log(`     ohne EMS-Integration: ${(nOhne*100).toFixed(1)} %  ·  mit: ${(nMit*100).toFixed(1)} %`);
+
+// N2: Wenn KEINE WP vorhanden → keine Wirkung
+const nKeine = recommendedAutarchy(4500, 15, 0, 10750, 0, 0, 0, 0, 0, 0, true);
+const nKeineOhne = recommendedAutarchy(4500, 15, 0, 10750, 0, 0, 0, 0, 0, 0, false);
+exact("N2: Ohne WP keine Wirkung", Math.abs(nKeine - nKeineOhne) < 0.001, true);
+
+// N3: Combined-Tab setzt wpEmsIntegrated = true automatisch
+const nCombined = presetForTab(DEFAULT_INPUTS, "combined");
+exact("N3: Combined-Tab → wpEmsIntegrated = true", nCombined.wpEmsIntegrated, true);
+
+// N4: Vorlage Heizma weiter exakt (wpEmsIntegrated aus)
+const nVorlage = calculate({ ...base, kwp: 14, yieldPerKwp: 1075,
+  consumption: 11000, autarchyRate: 0.8, electricityPrice: 0.21,
+  feedInTariff: 0.084, priceIncrease: 0.05, degradation: 0.005, years: 10 });
+exact("N4: Vorlage J10 weiter exakt",
+  Math.round(nVorlage.rows[9].cumulativeSavings), 27816);
 
 console.log(`\n${"=".repeat(70)}\n${ok} Tests grün, ${fail} Tests rot\n`);
 process.exit(fail > 0 ? 1 : 0);

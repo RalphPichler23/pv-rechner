@@ -2,6 +2,7 @@ import type { PvInputs, PvResult, TabMode } from "../../../lib/calc";
 import { ConsumptionSection } from "./ConsumptionSection";
 import { EmsSection } from "./EmsSection";
 import { EnergyCommunitySection } from "./EnergyCommunitySection";
+import { ExistingPvSection } from "./ExistingPvSection";
 import { ExtraConsumersSection } from "./ExtraConsumersSection";
 import { HeatPumpSection } from "./HeatPumpSection";
 import { PricingSection } from "./PricingSection";
@@ -61,10 +62,17 @@ export function InputsPanel({ tab, input, result, set, setMany, onReset }: Props
           wpHeatDemand={result.wpHeatDemand}
           wpElectricity={result.wpElectricity}
           showToggle={tab === "combined"}
+          showEmsIntegrationToggle={tab === "wp"}
         />
       ) : null}
 
-      <PricingSection input={input} set={set} showPv={showPv} />
+      {/* Bestehende PV nur im WP-Tab — im PV/combined-Tab wird PV ohnehin
+          als neue Anlage modelliert. */}
+      {tab === "wp" ? (
+        <ExistingPvSection input={input} set={set} setMany={setMany} />
+      ) : null}
+
+      <PricingSection input={input} set={set} showPv={showPv || input.existingPvEnabled} />
 
       <button
         type="button"

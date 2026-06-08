@@ -87,7 +87,24 @@ function FlowSteps({
   result: PvResult;
   r: YearRow;
 }) {
-  const effectiveCons = input.consumption + result.wpElectricity;
+  // Alle Stromverbraucher zusammenrechnen für die Anzeige
+  const parts: string[] = [`${fmt.int(input.consumption)} kWh Haushalt`];
+  if (result.wpElectricity > 0)
+    parts.push(`${fmt.int(result.wpElectricity)} kWh WP-Tausch`);
+  if (input.existingWpEnabled && !input.wpEnabled && input.existingWpKwhPerYear > 0)
+    parts.push(`${fmt.int(input.existingWpKwhPerYear)} kWh best. WP`);
+  if (input.evEnabled && input.evKwhPerYear > 0)
+    parts.push(`${fmt.int(input.evKwhPerYear)} kWh E-Auto`);
+  if (input.poolEnabled && input.poolKwhPerYear > 0)
+    parts.push(`${fmt.int(input.poolKwhPerYear)} kWh Pool`);
+  if (input.acEnabled && input.acKwhPerYear > 0)
+    parts.push(`${fmt.int(input.acKwhPerYear)} kWh Klima`);
+  if (input.saunaEnabled && input.saunaKwhPerYear > 0)
+    parts.push(`${fmt.int(input.saunaKwhPerYear)} kWh Sauna`);
+  if (input.whirlpoolEnabled && input.whirlpoolKwhPerYear > 0)
+    parts.push(`${fmt.int(input.whirlpoolKwhPerYear)} kWh Whirlpool`);
+  const effectiveCons =
+    r.gridConsumption + r.selfConsumption; // = realer Gesamtverbrauch
   const emsActive = input.emsEnabled && input.emsAutarchyBonus > 0;
   const effAutarchy = Math.min(
     0.95,
@@ -97,16 +114,12 @@ function FlowSteps({
     <Group title="③ Stromfluss">
       <Step
         label="Effektiver Stromverbrauch"
-        formula={
-          result.wpElectricity > 0
-            ? `${fmt.int(input.consumption)} kWh Haushalt + ${fmt.int(result.wpElectricity)} kWh WP`
-            : `${fmt.int(input.consumption)} kWh Haushalt`
-        }
+        formula={parts.join(" + ")}
         result={`${fmt.int(effectiveCons)} kWh`}
       />
       {emsActive ? (
         <Step
-          label="Effektive Eigendeckung"
+          label="Effektive Autarkie"
           formula={`${fmt.pct(input.autarchyRate)} + ${fmt.pct(input.emsAutarchyBonus)} EMS-Bonus`}
           result={fmt.pct(effAutarchy)}
         />
@@ -163,7 +176,18 @@ function CostSteps({
   r: YearRow;
   showWp: boolean;
 }) {
-  const householdStromCost = input.consumption * r.electricityPrice;
+  // Status-quo-Strom inkl. Zusatzverbrauchern (außer WP-Tausch — der läuft
+  // im Status quo noch nicht)
+  const existingWp =
+    input.existingWpEnabled && !input.wpEnabled ? input.existingWpKwhPerYear : 0;
+  const ev = input.evEnabled ? input.evKwhPerYear : 0;
+  const pool = input.poolEnabled ? input.poolKwhPerYear : 0;
+  const sauna = input.saunaEnabled ? input.saunaKwhPerYear : 0;
+  const whirlpool = input.whirlpoolEnabled ? input.whirlpoolKwhPerYear : 0;
+  const ac = input.acEnabled ? input.acKwhPerYear : 0;
+  const statusQuoElectricity =
+    input.consumption + existingWp + ev + pool + sauna + whirlpool + ac;
+  const householdStromCost = statusQuoElectricity * r.electricityPrice;
   const oldHeatingCost = showWp
     ? input.oldFuelDemand * input.oldFuelPricePerKwh + input.oldMaintenanceCost
     : 0;
@@ -179,8 +203,8 @@ function CostSteps({
   return (
     <Group title="⑤ Kosten & Ersparnis">
       <Step
-        label="Status quo: Haushaltsstrom"
-        formula={`${fmt.int(input.consumption)} kWh × ${fmt.cents(r.electricityPrice)} ct`}
+        label="Status quo: Strom (Haushalt + bestehende Verbraucher)"
+        formula={`${fmt.int(statusQuoElectricity)} kWh × ${fmt.cents(r.electricityPrice)} ct`}
         result={fmt.eur(householdStromCost)}
       />
       {showWp ? (

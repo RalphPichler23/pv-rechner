@@ -10,8 +10,12 @@
  * - Sättigung bei ~85-90 %
  *
  * Synergie-Faktoren relativ zu Haushaltsstrom = 1,0:
- *  Wärmepumpe        0,40   Winter-Last, PV liefert dort 5-15 %
- *  Bestehende WP     0,40   (gleicher Lastgang)
+ *  Wärmepumpe        0,60   Heizperiode = 42 % der PV-Jahresproduktion
+ *                            (Übergangsmonate Okt/Mär/Apr decken viel ab);
+ *                            thermischer Pufferspeicher + EMS macht
+ *                            zeitliche Verschiebung tagsüber → abends möglich.
+ *                            HTW Berlin: Sektorkopplung 65-75 % Gesamtautarkie.
+ *  Bestehende WP     0,60   (gleiches Lastprofil)
  *  Pool              1,00   Sommer-Last, perfekt zur PV-Spitze
  *  Klimaanlage       1,00   Sommer-Mittag, perfekt zur PV-Spitze
  *  E-Auto            0,80   ganzjährig + Überschuss-Laden möglich
@@ -32,8 +36,8 @@ export interface ExtraConsumers {
 
 export const SYNERGY = {
   household: 1.0,
-  heatPump: 0.4,
-  existingHeatPump: 0.4,
+  heatPump: 0.6,
+  existingHeatPump: 0.6,
   ev: 0.8,
   pool: 1.0,
   sauna: 0.6,
@@ -52,6 +56,11 @@ export function recommendedAutarchy(
   saunaKwh = 0,
   whirlpoolKwh = 0,
   acKwh = 0,
+  /**
+   * WP ist ins EMS eingebunden → Lastverschiebung möglich.
+   * Hebt den WP-Synergie-Faktor von 0,6 auf 0,8.
+   */
+  wpEmsIntegrated = false,
 ): number {
   const totalConsumption =
     consumptionKwhPerYear +
@@ -73,11 +82,15 @@ export function recommendedAutarchy(
   const stored = 0.6 * (1 - Math.exp(-1.5 * ratio));
   const householdAutarchy = Math.max(0.05, Math.min(0.9, direct + stored));
 
+  // Wenn WP ins EMS integriert ist, steigt der Synergie-Faktor durch
+  // gezielte Lastverschiebung (WP läuft tagsüber wenn PV produziert).
+  const wpFactor = wpEmsIntegrated ? 0.8 : SYNERGY.heatPump;
+
   // Gewichteter Mittelwert über die Verbraucher mit Synergie-Faktoren
   const weighted =
     consumptionKwhPerYear * householdAutarchy * SYNERGY.household +
-    wpElectricityKwhPerYear * householdAutarchy * SYNERGY.heatPump +
-    existingWpKwhPerYear * householdAutarchy * SYNERGY.existingHeatPump +
+    wpElectricityKwhPerYear * householdAutarchy * wpFactor +
+    existingWpKwhPerYear * householdAutarchy * wpFactor +
     evKwhPerYear * householdAutarchy * SYNERGY.ev +
     poolKwh * householdAutarchy * SYNERGY.pool +
     saunaKwh * householdAutarchy * SYNERGY.sauna +

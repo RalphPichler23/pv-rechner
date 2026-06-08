@@ -62,7 +62,7 @@ export function PvInputSection({ input, set, totalInvestment }: Props) {
           min={0}
           step={1}
           decimals={1}
-          hint="0 = ohne Speicher · Wirkt auf die empfohlene Eigendeckung"
+          hint="0 = ohne Speicher · Wirkt auf die empfohlene Autarkie"
         />
       </div>
       <div className="mt-3">

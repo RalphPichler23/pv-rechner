@@ -23,10 +23,9 @@ export function EmsSection({ input, set }: Props) {
             EMS aktivieren
           </div>
           <div className="mt-0.5 text-[11px] text-heizma-muted">
-            Steuert Wärmepumpe, Wallbox & Speicher und hebt damit den
-            Eigendeckungsgrad an. Lohnt sich vor allem mit WP oder Wallbox –
-            bei reiner PV-Anlage kann die EMS-Investition die Amortisation
-            leicht verlängern.
+            Steuert WP, Wallbox & Speicher und hebt damit den Autarkiegrad an.
+            Mit dynamischem Stromtarif lädt das EMS den Speicher automatisch in
+            günstigen Spotpreis-Stunden auf.
           </div>
         </div>
       </label>
@@ -41,7 +40,7 @@ export function EmsSection({ input, set }: Props) {
             max={30}
             step={1}
             decimals={0}
-            hint="Optima typ. +5 – 15 PP"
+            hint="HTW Berlin: realistisch +5–10 PP · Heizma-Werbung bis 15 PP"
           />
           <NumberInput
             label="EMS-Investition"

@@ -12,7 +12,7 @@ export function SummaryStats({ result, years }: Props) {
     { label: "Gesamtproduktion", value: `${fmt.int(result.totalProduction)} kWh` },
     { label: "Eigenverbrauch gesamt", value: `${fmt.int(result.totalSelfConsumption)} kWh` },
     { label: "Einspeisung gesamt", value: `${fmt.int(result.totalFeedIn)} kWh` },
-    { label: "Ø Eigendeckung", value: fmt.pct(result.averageAutarchy) },
+    { label: "Ø Autarkie", value: fmt.pct(result.averageAutarchy) },
     {
       label: `Strompreis Jahr ${years}`,
       value: `${fmt.cents(lastRow.electricityPrice)} ct/kWh`,

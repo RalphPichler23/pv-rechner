@@ -89,15 +89,28 @@ export function calculate(input: PvInputs): PvResult {
     const egSoldKwh = feedIn * egSellShare;
     const oemagSoldKwh = feedIn - egSoldKwh;
 
-    // Status-quo-Kosten: Haushaltsstrom (ohne WP) + alte Heizung
+    // Status-quo-Kosten: Strom für Haushalt + bestehende Zusatzverbraucher
+    // (WP/EV/Pool/...) zahlt der Kunde auch ohne PV. Die *neue* WP aus dem
+    // Heizungstausch (wpElectricity) ist NICHT dabei – im Status quo läuft
+    // dort noch die alte Heizung (oldHeatingCost).
+    const statusQuoElectricity =
+      input.consumption + existingWp + ev + pool + sauna + whirlpool + ac;
     const oldHeatingCost = input.wpEnabled
       ? input.oldFuelDemand * oldFuelPrice + input.oldMaintenanceCost
       : 0;
     const wpMaintenance = input.wpEnabled ? input.wpMaintenanceCost : 0;
 
-    const costWithoutPv = input.consumption * price + oldHeatingCost;
+    // Dynamischer Tarif: -X% auf den regulären Netzbezug NACH PV/EMS.
+    // Im Status quo ohne intelligente Steuerung greift der Rabatt nicht voll,
+    // daher wirkt er hier nur auf der "Mit PV/WP"-Seite.
+    const dynDiscount = input.dynamicTariffEnabled
+      ? clamp(input.dynamicTariffDiscount, 0, 0.5)
+      : 0;
+    const gridPriceEffective = price * (1 - dynDiscount);
+
+    const costWithoutPv = statusQuoElectricity * price + oldHeatingCost;
     const costWithPv =
-      regBoughtKwh * price +
+      regBoughtKwh * gridPriceEffective +
       egBoughtKwh * egBuy -
       oemagSoldKwh * input.feedInTariff -
       egSoldKwh * egSell +

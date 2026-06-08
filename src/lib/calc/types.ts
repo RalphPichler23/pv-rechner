@@ -47,6 +47,12 @@ export interface PvInputs {
   /** EMS-Investitionskosten in € */
   emsCost: number;
 
+  // ---- Dynamische Stromtarife (z.B. aWattar, Tibber) ----
+  /** Dynamischer Tarif für den Netzbezug aktiv */
+  dynamicTariffEnabled: boolean;
+  /** Rabatt auf den Netzbezugs-Preis (0..0.3), wirkt nur "mit PV/EMS" */
+  dynamicTariffDiscount: number;
+
   // ---- Energiegemeinschaft ----
   /** Anteil der Einspeisung, der an die EG verkauft wird (0..1) */
   egSellShare: number;
@@ -63,6 +69,8 @@ export interface PvInputs {
 
   // ---- Wärmepumpe ----
   wpEnabled: boolean;
+  /** WP ist ins EMS einbindbar → +20 % auf WP-Synergie-Faktor bei aktivem EMS */
+  wpEmsIntegrated: boolean;
   /** Jahresbrennstoffbedarf der alten Heizung in kWh (Wert von der alten Rechnung) */
   oldFuelDemand: number;
   /** Wirkungsgrad der alten Heizung (0..1, z.B. 0.9 bei Gas) */
@@ -82,6 +90,10 @@ export interface PvInputs {
   oldFuelPriceIncrease: number;
   /** Wartungskosten alte Heizung €/Jahr */
   oldMaintenanceCost: number;
+
+  // ---- Bestehende PV-Anlage (nur im WP-Tab relevant) ----
+  /** PV-Anlage ist bereits vorhanden – wird zur Deckung des WP-Stroms genutzt */
+  existingPvEnabled: boolean;
 
   // ---- Zusatzverbraucher (bestehende Geräte, kein Heizungstausch!) ----
   /** Wärmepumpe ist bereits vorhanden (zählt nur als Verbraucher) */

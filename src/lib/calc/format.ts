@@ -34,4 +34,11 @@ export const fmt = {
   /** ct/kWh aus €/kWh */
   cents: (n: number) => dec2.format(n * 100),
   pct: (n: number) => pct1.format(n),
+  /**
+   * Amortisationszeit konservativ aufrunden zur nächsten Zehntel,
+   * damit z.B. 10,04 nicht als "10,0 Jahre" angezeigt wird (täuschend früh)
+   * sondern als "10,1 Jahre". Konsistent mit `amortizationYear` (Math.ceil).
+   */
+  years: (fraction: number) =>
+    `${(Math.ceil(fraction * 10) / 10).toFixed(1).replace(".", ",")} Jahre`,
 };

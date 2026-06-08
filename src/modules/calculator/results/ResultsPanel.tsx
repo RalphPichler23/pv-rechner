@@ -90,7 +90,7 @@ export function ResultsPanel({ input, result }: Props) {
             <span className="font-medium text-heizma-ink-soft">
               {fmt.pct(input.autarchyRate)}
             </span>{" "}
-            Eigendeckung
+            Autarkie
           </div>
         </header>
         <ResultTable

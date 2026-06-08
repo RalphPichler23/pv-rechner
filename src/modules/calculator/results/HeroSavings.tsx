@@ -15,7 +15,7 @@ export function HeroSavings({ result, years }: Props) {
   const isPositive = netto >= 0;
   const amort =
     result.amortizationFraction !== null
-      ? `${result.amortizationFraction.toFixed(1)} Jahre`
+      ? fmt.years(result.amortizationFraction)
       : "—";
 
   return (

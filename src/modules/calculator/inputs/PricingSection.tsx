@@ -11,6 +11,20 @@ interface Props {
 }
 
 export function PricingSection({ input, set, showPv }: Props) {
+  // Gesamt-Stromverbrauch (Status quo) für die Jahresrechnungs-Anzeige:
+  // Haushalt + bestehende Zusatzverbraucher. NEUE WP (wpEnabled) gehört NICHT
+  // dazu – im Status quo läuft dort die alte Heizung.
+  const existingWp =
+    input.existingWpEnabled && !input.wpEnabled ? input.existingWpKwhPerYear : 0;
+  const ev = input.evEnabled ? input.evKwhPerYear : 0;
+  const pool = input.poolEnabled ? input.poolKwhPerYear : 0;
+  const sauna = input.saunaEnabled ? input.saunaKwhPerYear : 0;
+  const whirlpool = input.whirlpoolEnabled ? input.whirlpoolKwhPerYear : 0;
+  const ac = input.acEnabled ? input.acKwhPerYear : 0;
+  const totalStatusQuo =
+    input.consumption + existingWp + ev + pool + sauna + whirlpool + ac;
+  const yearBill = totalStatusQuo * input.electricityPrice;
+
   return (
     <>
       <Fieldset legend="Preise & Tarife">
@@ -24,7 +38,22 @@ export function PricingSection({ input, set, showPv }: Props) {
             step={0.5}
             decimals={2}
           />
-          {showPv ? (
+          <NumberInput
+            label="Jahres-Stromrechnung"
+            unit="€/J"
+            value={yearBill}
+            onChange={(v) => {
+              if (totalStatusQuo <= 0) return;
+              set("electricityPrice", v / totalStatusQuo);
+            }}
+            min={0}
+            step={50}
+            decimals={0}
+            hint={`Für ${Math.round(totalStatusQuo).toLocaleString("de-AT")} kWh Verbrauch/J`}
+          />
+        </div>
+        {showPv ? (
+          <div className="mt-3">
             <NumberInput
               label="Einspeisetarif"
               unit="ct/kWh"
@@ -34,8 +63,8 @@ export function PricingSection({ input, set, showPv }: Props) {
               step={0.1}
               decimals={2}
             />
-          ) : null}
-        </div>
+          </div>
+        ) : null}
         <div className="mt-3 grid grid-cols-2 gap-3">
           <NumberInput
             label="Strompreis-Steigerung"
@@ -69,6 +98,44 @@ export function PricingSection({ input, set, showPv }: Props) {
             step={1}
             decimals={0}
           />
+        </div>
+
+        {/* Dynamische Stromtarife */}
+        <div className="mt-4 border-t border-heizma-border pt-4">
+          <label className="flex items-start gap-3 rounded-xl border border-heizma-border bg-heizma-bg/60 p-3">
+            <input
+              type="checkbox"
+              checked={input.dynamicTariffEnabled}
+              onChange={(e) => set("dynamicTariffEnabled", e.target.checked)}
+              className="mt-0.5 h-4 w-4 cursor-pointer accent-heizma-green"
+            />
+            <div className="flex-1">
+              <div className="text-[13px] font-medium text-heizma-ink-soft">
+                ⚡ Dynamische Stromtarife (aWattar, Tibber …)
+              </div>
+              <div className="mt-0.5 text-[11px] text-heizma-muted">
+                aWattar Hourly, Tibber & Co. – das EMS lädt den Speicher in
+                günstigen Spotpreis-Stunden aus dem Netz auf und verschiebt
+                steuerbare Verbraucher (WP, Wallbox). Reduziert den effektiven
+                Netzbezugs­preis.
+              </div>
+            </div>
+          </label>
+          {input.dynamicTariffEnabled ? (
+            <div className="mt-3">
+              <NumberInput
+                label="Rabatt auf Netzbezug"
+                unit="%"
+                value={input.dynamicTariffDiscount * 100}
+                onChange={(v) => set("dynamicTariffDiscount", v / 100)}
+                min={0}
+                max={30}
+                step={1}
+                decimals={0}
+                hint="aWattar Hourly historisch −10 % bis −15 %"
+              />
+            </div>
+          ) : null}
         </div>
       </Fieldset>
     </>

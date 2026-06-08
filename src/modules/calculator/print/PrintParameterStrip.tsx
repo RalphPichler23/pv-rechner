@@ -13,7 +13,7 @@ export function PrintParameterStrip({ input, tab }: Props) {
     items.push(
       { label: "Anlage", value: `${input.kwp} kWp · ${fmt.int(input.yieldPerKwp)} kWh/kWp` },
       { label: "Speicher", value: `${input.storageKwh.toFixed(1)} kWh` },
-      { label: "Eigendeckung", value: fmt.pct(input.autarchyRate) },
+      { label: "Autarkie", value: fmt.pct(input.autarchyRate) },
       { label: "Strompreis", value: `${fmt.cents(input.electricityPrice)} ct/kWh` },
       { label: "Einspeisetarif", value: `${fmt.cents(input.feedInTariff)} ct/kWh` },
       { label: "Preissteigerung", value: `${(input.priceIncrease * 100).toFixed(1)} %/J` },
